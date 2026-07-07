@@ -14,7 +14,7 @@ Telling Hbb and Hcc apart is a genuinely hard physics problem — b-quarks and
 c-quarks leave very similar footprints in a detector. That's exactly why it's
 a good teaching example: it's simple enough to build in an afternoon, but
 real enough that the same ideas scale up to the actual particle-physics AI
-models used in CMS (like the full [Particle Transformer](https://arxiv.org/abs/2202.03772)).
+models (like the full [Particle Transformer](https://arxiv.org/abs/2202.03772)).
 
 **MiniParT is a mini version of that: same core idea (a transformer looking
 at jets), radically simplified so a human can read every line and understand

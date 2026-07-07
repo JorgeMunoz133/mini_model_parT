@@ -1,7 +1,7 @@
 # Getting the data
 
 This project needs three CMS Open Data files. They are **not included** in
-this repo (each dataset is many gigabytes) - you need to download them
+this repo - you need to download them
 yourself and place them here as:
 
 ```

@@ -1,21 +1,21 @@
-# Lesson 2 — Finding the Truth Labels
+# Lesson 2 - Finding the Truth Labels
 
 ## Why we need an answer key
 
 To train a model with examples, we need to already know the right answer
-for each example — otherwise there's nothing to learn from. This is called
+for each example - otherwise there's nothing to learn from. This is called
 **supervised learning**: "supervised" because a known answer supervises
 (corrects) the model while it learns.
 
 For real collision data, nobody can look at the debris and just *know*
-which quark caused which jet — that information isn't directly visible.
+which quark caused which jet - that information isn't directly visible.
 But for **simulated** data, it's different: the simulation software
 generated the whole event starting from "let's create a Higgs boson that
 decays to two bottom quarks," so it also secretly records what actually
 happened at the truth level, before detector effects blur things. That
 secret record is stored as extra columns starting with `GenPart_*`
 ("Generator-level Particle"). We only use these truth columns to *build
-our training labels* — the model itself never sees them.
+our training labels* - the model itself never sees them.
 
 ## The two signal files (ttHTobb, ttHTocc): matching jets to truth
 
@@ -24,15 +24,15 @@ event, which ones actually came from the Higgs boson's b-quarks (or
 c-quarks)?* This is a two-step process, all handled inside
 `extract_features()` in `code/features.py`.
 
-### Step 1 — Find the Higgs boson's daughter quarks
+### Step 1 - Find the Higgs boson's daughter quarks
 
 Every particle in `GenPart_*` has:
-- `GenPart_pdgId` — an ID number identifying *what* the particle is.
+- `GenPart_pdgId` - an ID number identifying *what* the particle is.
   Physicists use a standard numbering scheme called the **PDG ID**: `5`
   means a bottom quark, `4` means a charm quark (and `-5`/`-4` are their
   antimatter partners, which is why we compare `abs(pdgId)`), `25` means
   a Higgs boson.
-- `GenPart_genPartIdxMother` — which earlier particle in the list is this
+- `GenPart_genPartIdxMother` - which earlier particle in the list is this
   particle's "parent" (the thing that decayed into it).
 
 So "find the Higgs boson's daughter quarks" becomes: *find particles
@@ -51,13 +51,13 @@ also throw away any event where that isn't true:
 mask = ak.num(events.GenPart_pt[is_higgs_dau]) == 2
 ```
 
-### Step 2 — Match those quarks to actual reconstructed jets
+### Step 2 - Match those quarks to actual reconstructed jets
 
 Knowing *which truth-level quarks* came from the Higgs boson isn't quite
-enough — we need to know *which of the actual reconstructed jets* in the
+enough - we need to know *which of the actual reconstructed jets* in the
 detector correspond to them. We do that with a geometric trick.
 
-Remember `eta` and `phi` from Lesson 1 — they're like latitude and
+Remember `eta` and `phi` from Lesson 1 - they're like latitude and
 longitude for a particle's direction. We can measure the "distance" on
 that map between a jet and a truth quark using a quantity called **ΔR**
 (read "delta R"):
@@ -67,7 +67,7 @@ that map between a jet and a truth quark using a quantity called **ΔR**
 ```
 
 If ΔR is small, the jet and the quark are pointing in almost the same
-direction — good evidence that jet *is* the spray created by that quark.
+direction - good evidence that jet *is* the spray created by that quark.
 We use a common threshold of **ΔR < 0.4**:
 
 ```python
@@ -77,7 +77,7 @@ matched = (dr1 < 0.4) | (dr2 < 0.4)
 
 ### Why `delta_phi` needs its own function
 
-`phi` is an angle that wraps around a circle (0 to 2π, then back to 0) —
+`phi` is an angle that wraps around a circle (0 to 2π, then back to 0) -
 like a clock face. If one jet is at `phi = 0.1` and another is at
 `phi = 6.2` (close to 2π), a naive subtraction says they're almost
 3.5 radians apart, when really they're neighbors, just on either side of
@@ -90,13 +90,13 @@ def delta_phi(phi1, phi2):
 ```
 
 This squeezes the difference back into the range `[-π, π]`, so it always
-reports the *shortest* way around the circle — exactly like saying "11
+reports the *shortest* way around the circle - exactly like saying "11
 o'clock to 1 o'clock is 2 hours apart," not 10.
 
 ### Keeping exactly two matched jets
 
-Finally, we only keep events where exactly two jets matched — one for each
-Higgs daughter quark — since MiniParT is built to always look at a pair of
+Finally, we only keep events where exactly two jets matched - one for each
+Higgs daughter quark - since MiniParT is built to always look at a pair of
 jets:
 
 ```python
@@ -107,7 +107,7 @@ final_events = matched_events[mask_2jets]
 ## The background file (QCD): no matching needed
 
 For the QCD background sample, there's no Higgs boson to match to at all
-— by definition, it's not there. So we take a simpler approach: just grab
+- by definition, it's not there. So we take a simpler approach: just grab
 the two highest-momentum ("leading") jets in each event, since those are
 the ones most likely to matter for a physics analysis:
 
@@ -132,11 +132,11 @@ y = np.full(X.shape[0], label)
 ```
 
 ## Quick recap
-- Truth-level (`GenPart_*`) columns exist only in simulation, and only get used to *build labels* — never fed to the model.
+- Truth-level (`GenPart_*`) columns exist only in simulation, and only get used to *build labels* - never fed to the model.
 - We find the Higgs boson's daughter quarks by PDG ID (5 = bottom, 4 = charm) and mother ID (25 = Higgs).
-- We match those truth quarks to real jets using ΔR — a "distance on the sky" built from `eta` and `phi`.
+- We match those truth quarks to real jets using ΔR - a "distance on the sky" built from `eta` and `phi`.
 - QCD background just uses the two leading jets, since there's no Higgs decay to match to.
-- Next: [Lesson 3 — preparing this data to actually feed into a neural network](03_preparing_the_data.md)
+- Next: [Lesson 3 - preparing this data to actually feed into a neural network](03_preparing_the_data.md)
 
 ## Full code for this lesson
 

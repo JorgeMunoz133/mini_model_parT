@@ -1,4 +1,4 @@
-# MiniParT — A Tiny Particle Transformer
+# MiniParT - A Tiny Particle Transformer
 
 This repo builds, from scratch, a very small AI model that looks at particle
 collisions from the CMS experiment at CERN and guesses **what made them**.
@@ -6,11 +6,11 @@ collisions from the CMS experiment at CERN and guesses **what made them**.
 Specifically, it looks at pairs of "jets" (sprays of particles) and decides
 between three options:
 
-1. **Hbb** — the jets came from a Higgs boson that decayed into two bottom quarks
-2. **Hcc** — the jets came from a Higgs boson that decayed into two charm quarks
-3. **QCD** — the jets are just random background noise, not from a Higgs boson at all
+1. **Hbb** - the jets came from a Higgs boson that decayed into two bottom quarks
+2. **Hcc** - the jets came from a Higgs boson that decayed into two charm quarks
+3. **QCD** - the jets are just random background noise, not from a Higgs boson at all
 
-Telling Hbb and Hcc apart is a genuinely hard physics problem — b-quarks and
+Telling Hbb and Hcc apart is a genuinely hard physics problem - b-quarks and
 c-quarks leave very similar footprints in a detector. That's exactly why it's
 a good teaching example: it's simple enough to build in an afternoon, but
 real enough that the same ideas scale up to the actual particle-physics AI
@@ -31,9 +31,15 @@ needs to know.
 | 4 | [Building MiniParT](lessons/04_building_mini_part.md) | The model itself, piece by piece |
 | 5 | [Training the Model](lessons/05_training_the_model.md) | How the model actually learns |
 | 6 | [Evaluating the Model](lessons/06_evaluating_the_model.md) | Did it work? How do we know? |
+| 7 | [The Complete Code](lessons/07_complete_code.md) | Every piece, assembled in one place |
 
 Each lesson ends with a "Quick recap" and links to the matching code file in
-[`code/`](code/), which you can run for real.
+[`code/`](code/), which you can run for real. Lessons 1 through 6 also each
+end with a "Full code for this lesson" block you can copy straight into a
+**Jupyter** notebook cell, or paste into a **Google Colab** cell, as you go.
+If you'd rather have the whole pipeline in one runnable file instead of
+copying cell by cell, open [`mini_model_full_notebook.ipynb`](mini_model_full_notebook.ipynb)
+directly in Jupyter or upload it to Colab.
 
 ## Repo structure
 
@@ -41,6 +47,7 @@ Each lesson ends with a "Quick recap" and links to the matching code file in
 mini_model_parT/
 ├── README.md                       <- you are here
 ├── requirements.txt                 <- Python packages you need
+├── mini_model_full_notebook.ipynb   <- the whole pipeline as one runnable notebook
 ├── datasets/
 │   └── README.md                   <- where to get the CERN data, not the data itself
 ├── lessons/
@@ -50,14 +57,17 @@ mini_model_parT/
 │   ├── 03_preparing_the_data.md
 │   ├── 04_building_mini_part.md
 │   ├── 05_training_the_model.md
-│   └── 06_evaluating_the_model.md
+│   ├── 06_evaluating_the_model.md
+│   └── 07_complete_code.md
 └── code/
     ├── features.py                 <- reads raw CERN files, matches jets to truth-level Higgs daughters
     ├── prepare_data.py             <- split / scale / batch
     ├── model.py                    <- the MiniParT class
     ├── train.py                    <- the training loop
     ├── evaluate.py                 <- accuracy, confusion matrix, ROC curves
-    └── run_all.py                  <- runs the whole pipeline end to end
+    ├── run_all.py                  <- runs the whole pipeline end to end
+    ├── check_entries.py            <- quick sanity check: event counts per dataset file
+    └── self_check.py               <- verifies the repo's docs and notebook stay consistent
 ```
 
 ## The data
@@ -65,13 +75,13 @@ mini_model_parT/
 This project uses real CMS Open Data, released publicly by CERN under a
 CC0 (public domain) license:
 
-- `ttHTobb.root` — [CERN Open Data record 67645](https://opendata.cern.ch/record/67645)
-- `ttHTocc.root` — [CERN Open Data record 67651](https://opendata.cern.ch/record/67651)
-- `qcd_bctoe.root` — [CERN Open Data record 63242](https://opendata.cern.ch/record/63242)
+- `ttHTobb.root` - [CERN Open Data record 67645](https://opendata.cern.ch/record/67645)
+- `ttHTocc.root` - [CERN Open Data record 67651](https://opendata.cern.ch/record/67651)
+- `qcd_bctoe.root` - [CERN Open Data record 63242](https://opendata.cern.ch/record/63242)
 
 See [`datasets/README.md`](datasets/README.md) for how to download them. The
 files themselves are gigabytes in size, so they are **not** stored in this
-repo — only instructions for getting them.
+repo - only instructions for getting them.
 
 ## Quick start (once you have the data)
 
@@ -100,7 +110,7 @@ Raw confusion matrix (rows = true class, columns = predicted class):
 QCD is separated cleanly from the two signal classes, but most of the
 model's mistakes are Hbb↔Hcc confusion. That's expected, not a bug: b-quark
 and c-quark jets are physically similar, and telling them apart is a
-genuinely hard problem even for full-scale taggers — see
+genuinely hard problem even for full-scale taggers - see
 [The Big Picture](lessons/00_big_picture.md) for why.
 
 ![Confusion Matrix](code/confusion_matrix.png)

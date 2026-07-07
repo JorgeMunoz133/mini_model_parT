@@ -1,7 +1,7 @@
 # Getting the data
 
 This project needs three CMS Open Data files. They are **not included** in
-this repo (each dataset is many gigabytes) — you need to download them
+this repo (each dataset is many gigabytes) - you need to download them
 yourself and place them here as:
 
 ```
@@ -19,9 +19,9 @@ datasets/
 | `ttHTocc.root` | [record 67651](https://opendata.cern.ch/record/67651) | Simulated collisions where a Higgs boson decays to two charm quarks (H→cc) |
 | `qcd_bctoe.root` | [record 63242](https://opendata.cern.ch/record/63242) | Simulated ordinary background collisions (QCD), no Higgs boson involved |
 
-All three are **NanoAODSIM** format — simulated data that mimics real 2016
+All three are **NanoAODSIM** format - simulated data that mimics real 2016
 CMS collisions, released under a [CC0 public domain license](https://creativecommons.org/publicdomain/zero/1.0/).
-"Simulated" doesn't mean fake — it means physicists used the known laws of
+"Simulated" doesn't mean fake - it means physicists used the known laws of
 particle physics to generate what a real collision of that type *would* look
 like passing through the CMS detector. This is standard practice: you need
 simulated, truth-labeled data like this to train (and to test) any
@@ -35,7 +35,7 @@ download (useful since a single file can be gigabytes). See:
 
 - [Getting started with CMS NanoAOD](https://opendata.cern.ch/docs/cms-getting-started-nanoaod)
 
-You don't need every file listed on a record page — one or two files from
+You don't need every file listed on a record page - one or two files from
 each dataset is plenty for MiniParT, since `code/features.py` lets you cap
 the number of events read with `max_events`.
 
@@ -45,3 +45,26 @@ The code in this repo expects exactly these three names inside `datasets/`.
 If you download files with different names (CMS files usually have long
 names describing the full production chain), just rename them, or edit the
 paths at the top of `code/run_all.py`.
+
+## Verifying your download
+
+Once all three files are in place, run `code/check_entries.py` to do a quick
+sanity check - it opens each file and prints how many raw events (the
+`Events` tree's `num_entries`) each one contains, so you can confirm the
+download actually worked before running the full pipeline:
+
+```bash
+python code/check_entries.py
+```
+
+## Using these files in Jupyter or Colab
+
+If you're working through the lessons in a **Jupyter** notebook (or
+[`mini_model_full_notebook.ipynb`](../mini_model_full_notebook.ipynb)
+directly), keep `datasets/` in the same working directory as the notebook so
+the relative paths (`datasets/ttHTobb.root`, etc.) resolve correctly.
+
+If you're using **Google Colab** instead, you'll need to get these files
+into the Colab runtime yourself - for example, upload them to your Google
+Drive and mount it, or upload them directly to the Colab session - since
+Colab doesn't have access to your local filesystem.

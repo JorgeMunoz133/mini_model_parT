@@ -158,3 +158,54 @@ finally boil that down to 3 scores — one per possible answer.
 - Mean pooling merges the two jets' descriptions into one summary per event.
 - A small MLP turns that summary into 3 final class scores.
 - Next: [Lesson 5 — how the model actually learns from examples](05_training_the_model.md)
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+class MiniParT(nn.Module):
+    def __init__(self, input_dim, embed_dim=64, num_heads=4, hidden_dim=128, num_classes=3):
+        super(MiniParT, self).__init__()
+        
+        # 1. Linear projection (Embedding)
+        self.embedding = nn.Linear(input_dim, embed_dim)
+        
+        # 2. Transformer Encoder Layer (Self-Attention)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embed_dim, 
+            nhead=num_heads, 
+            dim_feedforward=hidden_dim, 
+            batch_first=True,
+            dropout=0.1
+        )
+        # Using just 2 layers for a "mini" model to keep local training fast
+        self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=2)
+        
+        # 3. Classification Head
+        self.mlp = nn.Sequential(
+            nn.Linear(embed_dim, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, num_classes)
+        )
+
+    def forward(self, x):
+        # x shape: (Batch, Seq_Len=2, Features)
+        
+        # Project features
+        x = self.embedding(x) # shape: (Batch, 2, embed_dim)
+        
+        # Apply self-attention
+        x = self.transformer(x) # shape: (Batch, 2, embed_dim)
+        
+        # Mean pooling over the sequence (the 2 jets)
+        x_pooled = x.mean(dim=1) # shape: (Batch, embed_dim)
+        
+        # Classify
+        out = self.mlp(x_pooled) # shape: (Batch, num_classes)
+        return out
+
+model = MiniParT(input_dim=len(FEATURE_NAMES))
+print(model)
+```

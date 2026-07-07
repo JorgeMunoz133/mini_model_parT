@@ -109,3 +109,41 @@ which is exactly what the next lesson covers.
 - Each batch: clear old gradients → forward pass → compute loss → backpropagate → update weights.
 - One full pass through all batches is an epoch; we repeat for several epochs so the model keeps improving.
 - Training accuracy is a useful sanity check, but not a fair test — see [Lesson 6](06_evaluating_the_model.md) for that.
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = model.to(device)
+
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=1e-4)
+
+epochs = 10
+
+for epoch in range(epochs):
+    model.train()
+    total_loss = 0
+    correct = 0
+    total = 0
+    
+    for batch_x, batch_y in train_loader:
+        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        
+        optimizer.zero_grad()
+        outputs = model(batch_x)
+        loss = criterion(outputs, batch_y)
+        
+        loss.backward()
+        optimizer.step()
+        
+        total_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += batch_y.size(0)
+        correct += predicted.eq(batch_y).sum().item()
+        
+    train_acc = 100. * correct / total
+    print(f"Epoch {epoch+1}/{epochs} | Loss: {total_loss/len(train_loader):.4f} | Train Acc: {train_acc:.2f}%")
+```

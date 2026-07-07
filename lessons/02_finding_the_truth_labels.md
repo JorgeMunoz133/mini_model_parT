@@ -137,3 +137,84 @@ y = np.full(X.shape[0], label)
 - We match those truth quarks to real jets using ΔR — a "distance on the sky" built from `eta` and `phi`.
 - QCD background just uses the two leading jets, since there's no Higgs decay to match to.
 - Next: [Lesson 3 — preparing this data to actually feed into a neural network](03_preparing_the_data.md)
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+def delta_phi(phi1, phi2):
+    dphi = phi1 - phi2
+    return (dphi + np.pi) % (2*np.pi) - np.pi
+
+def extract_features(filepath, label, is_signal=True, max_events=None):
+    tree = uproot.open(filepath)["Events"]
+    
+    # Load required branches
+    branches = FEATURE_NAMES.copy()
+    if is_signal:
+        branches += [
+            "GenPart_pdgId", "GenPart_pt", "GenPart_eta", 
+            "GenPart_phi", "GenPart_mass", "GenPart_genPartIdxMother"
+        ]
+    
+    events = tree.arrays(branches, entry_stop=max_events)
+    
+    if is_signal:
+        # Determine target quark based on label (0: b-quark=5, 1: c-quark=4)
+        target_pdg = 5 if label == 0 else 4
+        
+        mother_idx = events.GenPart_genPartIdxMother
+        valid = mother_idx >= 0
+        mother_pdg = ak.where(valid, events.GenPart_pdgId[mother_idx], -999)
+        
+        is_higgs_dau = (abs(events.GenPart_pdgId) == target_pdg) & (mother_pdg == 25)
+        mask = ak.num(events.GenPart_pt[is_higgs_dau]) == 2
+        events = events[mask]
+        is_higgs_dau = is_higgs_dau[mask]
+        
+        # Build 4-vectors
+        jets = ak.zip({
+            "pt": events.Jet_pt, "eta": events.Jet_eta,
+            "phi": events.Jet_phi, "mass": events.Jet_mass
+        }, with_name="Momentum4D")
+        
+        dau = ak.zip({
+            "pt": events.GenPart_pt[is_higgs_dau], "eta": events.GenPart_eta[is_higgs_dau],
+            "phi": events.GenPart_phi[is_higgs_dau], "mass": events.GenPart_mass[is_higgs_dau]
+        }, with_name="Momentum4D")
+        
+        d1, d2 = dau[:, 0], dau[:, 1]
+        
+        # Match using dR < 0.4
+        dr1 = np.sqrt((jets.eta - d1.eta[:, None])**2 + delta_phi(jets.phi, d1.phi[:, None])**2)
+        dr2 = np.sqrt((jets.eta - d2.eta[:, None])**2 + delta_phi(jets.phi, d2.phi[:, None])**2)
+        matched = (dr1 < 0.4) | (dr2 < 0.4)
+        
+        # Extract features for matched jets
+        matched_events = events[matched]
+        
+        # Keep exactly 2 matched jets
+        mask_2jets = ak.num(matched_events.Jet_pt) == 2
+        final_events = matched_events[mask_2jets]
+        
+    else:
+        # For QCD, require at least 2 jets and take the top 2 leading jets
+        mask_2jets = ak.num(events.Jet_pt) >= 2
+        events = events[mask_2jets]
+        # Slice to keep only the first 2 jets
+        final_events = events[:, :2]
+
+    # Stack features into a NumPy array of shape (N_events, 2_jets, N_features)
+    feature_list = []
+    for feat in FEATURE_NAMES:
+        # Fill missing values with 0 (e.g., puId might have NaNs depending on pt)
+        arr = ak.fill_none(final_events[feat], 0)
+        feature_list.append(ak.to_numpy(arr))
+        
+    X = np.stack(feature_list, axis=-1)
+    y = np.full(X.shape[0], label)
+    
+    print(f"Loaded label {label}: {X.shape[0]} events")
+    return X, y
+```

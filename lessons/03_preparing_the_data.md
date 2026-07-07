@@ -101,3 +101,37 @@ stored in.
 - Scale every feature to the same "average 0, spread 1" footing, fitting the scaler only on training data.
 - Convert to PyTorch tensors and feed the model small shuffled batches at a time, not the whole dataset at once.
 - Next: [Lesson 4 — building the MiniParT model itself](04_building_mini_part.md)
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+# Extract features (adjust max_events to None when ready for full training)
+X_bb, y_bb = extract_features("datasets/ttHTobb.root", label=0, is_signal=True, max_events=50000)
+X_cc, y_cc = extract_features("datasets/ttHTocc.root", label=1, is_signal=True, max_events=50000)
+X_qcd, y_qcd = extract_features("datasets/qcd_bctoe.root", label=2, is_signal=False, max_events=50000)
+
+# Combine datasets
+X = np.concatenate([X_bb, X_cc, X_qcd], axis=0)
+y = np.concatenate([y_bb, y_cc, y_qcd], axis=0)
+
+# Train/Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Normalize features (Transformers are sensitive to scale)
+# We flatten to (N*2, Features) to fit the scaler, then reshape back
+scaler = StandardScaler()
+X_train_flat = X_train.reshape(-1, len(FEATURE_NAMES))
+X_test_flat = X_test.reshape(-1, len(FEATURE_NAMES))
+
+X_train_scaled = scaler.fit_transform(X_train_flat).reshape(-1, 2, len(FEATURE_NAMES))
+X_test_scaled = scaler.transform(X_test_flat).reshape(-1, 2, len(FEATURE_NAMES))
+
+# Convert to PyTorch tensors
+train_data = TensorDataset(torch.tensor(X_train_scaled, dtype=torch.float32), torch.tensor(y_train, dtype=torch.long))
+test_data = TensorDataset(torch.tensor(X_test_scaled, dtype=torch.float32), torch.tensor(y_test, dtype=torch.long))
+
+train_loader = DataLoader(train_data, batch_size=256, shuffle=True)
+test_loader = DataLoader(test_data, batch_size=256, shuffle=False)
+```

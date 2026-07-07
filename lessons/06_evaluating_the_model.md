@@ -128,3 +128,147 @@ physics origin (both come from a Higgs boson) that QCD doesn't.
 That's the whole pipeline, start to finish — from raw CMS Open Data files
 to a trained, evaluated transformer. Head back to the [main README](../README.md)
 for how to actually run it end to end.
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+model.eval()
+correct = 0
+total = 0
+
+all_preds = []
+all_labels = []
+
+with torch.no_grad():
+    for batch_x, batch_y in test_loader:
+        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        
+        outputs = model(batch_x)
+        _, predicted = outputs.max(1)
+        
+        total += batch_y.size(0)
+        correct += predicted.eq(batch_y).sum().item()
+        
+        all_preds.extend(predicted.cpu().numpy())
+        all_labels.extend(batch_y.cpu().numpy())
+
+test_acc = 100. * correct / total
+print(f"Final Test Accuracy: {test_acc:.2f}%")
+```
+
+```python
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.preprocessing import label_binarize
+import torch.nn.functional as F
+
+model.eval()
+
+all_labels = []
+all_preds = []
+all_probs = []
+
+with torch.no_grad():
+    for batch_x, batch_y in test_loader:
+        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        
+        outputs = model(batch_x)
+        probs = F.softmax(outputs, dim=1) 
+        _, predicted = outputs.max(1)
+        
+        all_probs.extend(probs.cpu().numpy())
+        all_preds.extend(predicted.cpu().numpy())
+        all_labels.extend(batch_y.cpu().numpy())
+
+all_labels = np.array(all_labels)
+all_preds = np.array(all_preds)
+all_probs = np.array(all_probs)
+
+cm = confusion_matrix(all_labels, all_preds)
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+            xticklabels=['Hbb (0)', 'Hcc (1)', 'QCD (2)'], 
+            yticklabels=['Hbb (0)', 'Hcc (1)', 'QCD (2)'])
+
+plt.xlabel('Predicted Class', fontsize=12, fontweight='bold')
+plt.ylabel('True Class', fontsize=12, fontweight='bold')
+plt.title('miniParT Confusion Matrix', fontsize=14)
+plt.show()
+```
+
+```python
+y_test_bin = label_binarize(all_labels, classes=[0, 1, 2])
+n_classes = y_test_bin.shape[1]
+
+plt.figure(figsize=(10, 8))
+colors = ['blue', 'red', 'green']
+class_names = ['Hbb', 'Hcc', 'QCD']
+
+for i, color, name in zip(range(n_classes), colors, class_names):
+    fpr, tpr, _ = roc_curve(y_test_bin[:, i], all_probs[:, i])
+    roc_auc = auc(fpr, tpr)
+    
+    plt.plot(fpr, tpr, color=color, lw=2, 
+             label=f'{name} vs Rest (AUC = {roc_auc:.3f})')
+
+plt.plot([0, 1], [0, 1], 'k--', lw=2, label='Random Guessing')
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+plt.xlabel('False Positive Rate (Background Efficiency)', fontsize=12)
+plt.ylabel('True Positive Rate (Signal Efficiency)', fontsize=12)
+plt.title('miniParT ROC Curves', fontsize=14)
+plt.legend(loc="lower right", fontsize=11)
+plt.grid(alpha=0.3)
+plt.show()
+```
+
+```python
+import torch.nn.functional as F
+import pandas as pd
+
+model.eval()
+
+hbb_event, hcc_event, qcd_event = None, None, None
+
+for i in range(len(y_test)):
+    if y_test[i] == 0 and hbb_event is None:
+        hbb_event = torch.tensor(X_test_scaled[i:i+1], dtype=torch.float32).to(device)
+    elif y_test[i] == 1 and hcc_event is None:
+        hcc_event = torch.tensor(X_test_scaled[i:i+1], dtype=torch.float32).to(device)
+    elif y_test[i] == 2 and qcd_event is None:
+        qcd_event = torch.tensor(X_test_scaled[i:i+1], dtype=torch.float32).to(device)
+        
+    if hbb_event is not None and hcc_event is not None and qcd_event is not None:
+        break
+
+def get_fingerprint(event_tensor):
+    with torch.no_grad():
+        emb = model.embedding(event_tensor)
+        contextualized = model.transformer(emb)
+        fingerprint = contextualized.mean(dim=1) 
+    return fingerprint
+
+fp_hbb = get_fingerprint(hbb_event)
+fp_hcc = get_fingerprint(hcc_event)
+fp_qcd = get_fingerprint(qcd_event)
+
+sim_hbb_hcc = F.cosine_similarity(fp_hbb, fp_hcc).item()
+sim_hbb_qcd = F.cosine_similarity(fp_hbb, fp_qcd).item()
+sim_hcc_qcd = F.cosine_similarity(fp_hcc, fp_qcd).item()
+
+print("Cosine Similarity Matrix (1 = Identical, -1 = Opposite):\n")
+
+data = {
+    "Hbb": [1.0, sim_hbb_hcc, sim_hbb_qcd],
+    "Hcc": [sim_hbb_hcc, 1.0, sim_hcc_qcd],
+    "QCD": [sim_hbb_qcd, sim_hcc_qcd, 1.0]
+}
+
+df_sim = pd.DataFrame(data, index=["Hbb", "Hcc", "QCD"])
+print(df_sim.round(3))
+```

@@ -115,3 +115,31 @@ everything.
 - We describe each jet with 10 numbers: 4 about its size/direction (`pt`, `eta`, `phi`, `mass`), 4 about what it's made of (the energy fractions), and 2 about its structure (`nConstituents`, `puId`).
 - These numbers are read from public CMS NanoAOD files using `uproot`.
 - Next: [Lesson 2 — how do we know the *right answer* for each jet during training?](02_finding_the_truth_labels.md)
+
+## Full code for this lesson
+
+Copy this into your own Jupyter notebook cell(s), in order, as you go.
+
+```python
+import uproot
+import awkward as ak
+import vector
+import numpy as np
+import torch
+import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+vector.register_awkward()
+
+# We avoid DeepJet/DeepCSV variables as requested.
+# Using kinematics + energy fractions + pileup/multiplicity info.
+FEATURE_NAMES = [
+    'Jet_pt', 'Jet_eta', 'Jet_phi', 'Jet_mass',
+    'Jet_chHEF', 'Jet_neHEF', 'Jet_chEmEF', 'Jet_neEmEF',
+    'Jet_nConstituents', 'Jet_puId'
+]
+
+# Labels: 0 = Hbb, 1 = Hcc, 2 = QCD
+```

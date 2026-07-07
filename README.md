@@ -110,8 +110,3 @@ genuinely hard problem even for full-scale taggers — see
 
 ![Confusion Matrix](code/confusion_matrix.png)
 ![ROC Curves](code/roc_curves.png)
-
-## Credit
-
-Built by Jorge "Koke" Muñoz as part of a CMS Open Data Workshop project for
-physics educators, in collaboration with USFQ and CERN.

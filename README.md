@@ -65,9 +65,7 @@ mini_model_parT/
     ├── model.py                    <- the MiniParT class
     ├── train.py                    <- the training loop
     ├── evaluate.py                 <- accuracy, confusion matrix, ROC curves
-    ├── run_all.py                  <- runs the whole pipeline end to end
-    ├── check_entries.py            <- quick sanity check: event counts per dataset file
-    └── self_check.py               <- verifies the repo's docs and notebook stay consistent
+    └── run_all.py                  <- runs the whole pipeline end to end
 ```
 
 ## The data

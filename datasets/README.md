@@ -46,17 +46,6 @@ If you download files with different names (CMS files usually have long
 names describing the full production chain), just rename them, or edit the
 paths at the top of `code/run_all.py`.
 
-## Verifying your download
-
-Once all three files are in place, run `code/check_entries.py` to do a quick
-sanity check - it opens each file and prints how many raw events (the
-`Events` tree's `num_entries`) each one contains, so you can confirm the
-download actually worked before running the full pipeline:
-
-```bash
-python code/check_entries.py
-```
-
 ## Using these files in Jupyter or Colab
 
 If you're working through the lessons in a **Jupyter** notebook (or

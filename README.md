@@ -16,15 +16,10 @@ a good teaching example: it's simple enough to build in an afternoon, but
 real enough that the same ideas scale up to the actual particle-physics AI
 models (like the full [Particle Transformer](https://arxiv.org/abs/2202.03772)).
 
-**MiniParT is a mini version of that: same core idea (a transformer looking
-at jets), radically simplified so a human can read every line and understand
-every variable.**
 
 ## Start here
 
-Don't jump into the code first. Read the lessons in order — each one explains
-the *why* before you see the *how*. They're written so a curious middle
-schooler could follow them, but they don't skip anything a real ML engineer
+Each lesson explains the *why* before you see the *how*. They're written so anyone could follow them, but they don't skip anything a real ML engineer
 needs to know.
 
 | # | Lesson | What you'll learn |

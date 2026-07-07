@@ -34,7 +34,6 @@ file links, and instructions for streaming via XRootD instead of a full
 download (useful since a single file can be gigabytes). See:
 
 - [Getting started with CMS NanoAOD](https://opendata.cern.ch/docs/cms-getting-started-nanoaod)
-- [Using Docker containers for CMS Open Data](https://opendata.cern.ch/docs/cms-guide-docker)
 
 You don't need every file listed on a record page — one or two files from
 each dataset is plenty for MiniParT, since `code/features.py` lets you cap

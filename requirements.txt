@@ -1,3 +1,12 @@
+# Install with:
+#   Local / Jupyter notebook (in a terminal):  pip install -r requirements.txt
+#   Google Colab (in a notebook cell):         !pip install -r requirements.txt
+#     Colab already has numpy/pandas/matplotlib/seaborn/scikit-learn/torch
+#     preinstalled, but not uproot/awkward/vector, so this step is still
+#     needed there. If you're running mini_model_full_notebook.ipynb from
+#     this repo, upload this file alongside it (or clone the repo) first so
+#     the path "requirements.txt" resolves.
+
 uproot>=5.7
 awkward>=2.10
 vector>=1.8

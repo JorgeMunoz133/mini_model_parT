@@ -1,4 +1,4 @@
-# MiniParT — A Tiny Particle Transformer, Explained Like You're 11
+# MiniParT — A Tiny Particle Transformer
 
 This repo builds, from scratch, a very small AI model that looks at particle
 collisions from the CMS experiment at CERN and guesses **what made them**.

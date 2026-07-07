@@ -1,0 +1,9 @@
+uproot>=5.0
+awkward>=2.0
+vector>=1.0
+numpy
+torch
+scikit-learn
+matplotlib
+seaborn
+pandas
